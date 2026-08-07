@@ -1,0 +1,18 @@
+#!/bin/sh
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+echo "Running local CI checks..."
+
+echo "1. Checking formatting..."
+# --check ensures it fails if unformatted, rather than formatting and leaving unstaged changes
+cargo fmt --all -- --check
+
+echo "2. Running Clippy..."
+# -D warnings treats all warnings as errors so the commit fails
+cargo clippy --all-targets --all-features -- -D warnings
+
+echo "3. Running tests..."
+cargo test
+
+echo "All checks passed! Committing..."
