@@ -20,4 +20,6 @@ anyhow = "1.0.104"
 http-body-util = "0.1.4"
 hyper = { version = "1.11.0", features = ["full"] }
 hyper-util = { version = "0.1.20", features = ["full"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde-saphyr = "1.0.1"
 tokio = { version = "1.53.1", features = ["full"] }
