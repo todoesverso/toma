@@ -11,6 +11,7 @@ use tracing::{error, info};
 
 use hyper::body::Incoming as IncomingBody;
 use hyper::service::Service;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use std::future::Future;
 use std::pin::Pin;
@@ -70,6 +71,17 @@ impl Server {
             bind: bind.to_string(),
             port,
         }
+    }
+
+    pub fn init_logging(&self) {
+        // Accept log level as parameter
+        tracing_subscriber::registry()
+            .with(
+                tracing_subscriber::EnvFilter::try_from_default_env()
+                    .unwrap_or_else(|_| format!("toma={}", tracing::Level::INFO).into()),
+            )
+            .with(tracing_subscriber::fmt::layer())
+            .init();
     }
 
     pub async fn run(self) -> Result<()> {
