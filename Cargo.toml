@@ -23,3 +23,5 @@ hyper-util = { version = "0.1.20", features = ["full"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde-saphyr = "1.0.1"
 tokio = { version = "1.53.1", features = ["full"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }

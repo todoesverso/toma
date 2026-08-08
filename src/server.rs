@@ -7,6 +7,7 @@ use hyper::server::conn::http1;
 use hyper::{Request, Response, StatusCode};
 use hyper_util::rt::TokioIo;
 use tokio::net::TcpListener;
+use tracing::{error, info};
 
 use hyper::body::Incoming as IncomingBody;
 use hyper::service::Service;
@@ -74,7 +75,7 @@ impl Server {
     pub async fn run(self) -> Result<()> {
         let addr: SocketAddr = format!("{}:{}", self.bind, self.port).parse()?;
 
-        println!("Starting server on http://{}", addr);
+        info!("Starting server on http://{}", addr);
 
         let listener = TcpListener::bind(addr)
             .await
@@ -91,7 +92,7 @@ impl Server {
             tokio::task::spawn(async move {
                 let rh = RequestHandler::new();
                 if let Err(err) = http1::Builder::new().serve_connection(io, rh).await {
-                    eprintln!("Error serving connection: {:?}", err);
+                    error!("Error serving connection: {:?}", err);
                 }
             });
         }
