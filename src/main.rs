@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     let args = Args::new();
     let config = Config::load(args.input_file)?;
     let server = Server::new(config.bind.as_ref(), config.port);
-    server.init_logging();
+    server.init_logging(args.debug);
     server.run().await?;
     Ok(())
 }

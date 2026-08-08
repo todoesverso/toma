@@ -73,12 +73,17 @@ impl Server {
         }
     }
 
-    pub fn init_logging(&self) {
+    pub fn init_logging(&self, debug: bool) {
         // Accept log level as parameter
+        let level = if debug {
+            tracing::Level::DEBUG
+        } else {
+            tracing::Level::INFO
+        };
         tracing_subscriber::registry()
             .with(
                 tracing_subscriber::EnvFilter::try_from_default_env()
-                    .unwrap_or_else(|_| format!("toma={}", tracing::Level::INFO).into()),
+                    .unwrap_or_else(|_| format!("toma={}", level).into()),
             )
             .with(tracing_subscriber::fmt::layer())
             .init();
