@@ -6,6 +6,7 @@ use crate::server::Server;
 
 mod args;
 mod config;
+mod handlers;
 mod server;
 
 #[tokio::main]

@@ -1,68 +1,16 @@
-use std::net::SocketAddr;
-
 use anyhow::{Context, Result};
-use http_body_util::Full;
-use hyper::body::Bytes;
 use hyper::server::conn::http1;
-use hyper::{Request, Response, StatusCode};
 use hyper_util::rt::TokioIo;
+use std::net::SocketAddr;
 use tokio::net::TcpListener;
-use tracing::{error, info};
-
-use hyper::body::Incoming as IncomingBody;
-use hyper::service::Service;
+use tracing::{debug, error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use std::future::Future;
-use std::pin::Pin;
+use crate::handlers::RequestHandler;
 
 pub struct Server {
     bind: String,
     port: u16,
-}
-
-#[derive(Debug, Clone)]
-pub struct RequestHandler {}
-impl RequestHandler {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl Service<Request<IncomingBody>> for RequestHandler {
-    type Response = Response<Full<Bytes>>;
-    type Error = hyper::Error;
-    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
-
-    fn call(&self, req: Request<IncomingBody>) -> Self::Future {
-        fn mk_response(s: String) -> Result<Response<Full<Bytes>>, hyper::Error> {
-            Ok(Response::new(Full::new(Bytes::from(s))))
-        }
-
-        let res = match req.uri().path() {
-            "/" => mk_response("Home".to_string()),
-            "/hello" => hello(),
-            "/bye" => bye(),
-            _ => not_found(),
-        };
-
-        Box::pin(async { res })
-    }
-}
-
-fn hello() -> Result<Response<Full<Bytes>>, hyper::Error> {
-    Ok(Response::new(Full::new(Bytes::from("Hello, World!"))))
-}
-
-fn bye() -> Result<Response<Full<Bytes>>, hyper::Error> {
-    Ok(Response::new(Full::new(Bytes::from("Bye, World!"))))
-}
-
-fn not_found() -> Result<Response<Full<Bytes>>, hyper::Error> {
-    Ok(Response::builder()
-        .status(StatusCode::NOT_FOUND)
-        .body(Full::new(Bytes::from("404 Not Found")))
-        .unwrap())
 }
 
 impl Server {
@@ -99,11 +47,12 @@ impl Server {
             .context(format!("Failed to bind to socket {addr}"))?;
 
         loop {
-            let (stream, _) = listener
+            let (stream, remote_addr) = listener
                 .accept()
                 .await
                 .context("Failed to accept connection")?;
 
+            debug!("Accepted connection from {}", remote_addr);
             let io = TokioIo::new(stream);
 
             tokio::task::spawn(async move {
