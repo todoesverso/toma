@@ -21,11 +21,11 @@ pub struct Config {
 
 impl Config {
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        let yaml_str = fs::read_to_string(path.as_ref()).context(format!(
-            "Failed to read {}",
-            path.as_ref().to_string_lossy().into_owned()
-        ))?;
-        let config: Config = serde_saphyr::from_str(&yaml_str).context("Failed to parse YAML")?;
+        let path_str = path.as_ref().to_string_lossy().into_owned();
+        let yaml_str =
+            fs::read_to_string(path.as_ref()).context(format!("Failed to read {path_str}"))?;
+        let config: Config = serde_saphyr::from_str(&yaml_str)
+            .context(format!("Failed to parse YAML: {path_str}"))?;
         Ok(config)
     }
 }

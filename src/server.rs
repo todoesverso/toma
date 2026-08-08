@@ -15,7 +15,8 @@ use std::future::Future;
 use std::pin::Pin;
 
 pub struct Server {
-    // add config in the future
+    bind: String,
+    port: u16,
 }
 
 #[derive(Debug, Clone)]
@@ -63,12 +64,17 @@ fn not_found() -> Result<Response<Full<Bytes>>, hyper::Error> {
 }
 
 impl Server {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(bind: &str, port: u16) -> Self {
+        Self {
+            bind: bind.to_string(),
+            port,
+        }
     }
 
     pub async fn run(self) -> Result<()> {
-        let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+        let addr: SocketAddr = format!("{}:{}", self.bind, self.port).parse()?;
+
+        println!("Starting server on http://{}", addr);
 
         let listener = TcpListener::bind(addr)
             .await

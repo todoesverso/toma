@@ -10,9 +10,7 @@ mod server;
 async fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let config = Config::load(&args[1])?;
-    dbg!(config.bind);
-    dbg!(config.port);
-    let server = Server::new();
+    let server = Server::new(config.bind.as_ref(), config.port);
     server.run().await?;
     Ok(())
 }
