@@ -6,7 +6,7 @@ use tokio::net::TcpListener;
 use tracing::{debug, error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::handlers::RequestHandler;
+use crate::{handlers::RequestHandler, service::Service};
 
 pub struct Server {
     bind: String,
@@ -37,7 +37,7 @@ impl Server {
             .init();
     }
 
-    pub async fn run(self) -> Result<()> {
+    pub async fn run(self, services: Vec<Service>) -> Result<()> {
         let addr: SocketAddr = format!("{}:{}", self.bind, self.port).parse()?;
 
         info!("Starting server on http://{}", addr);
@@ -46,6 +46,7 @@ impl Server {
             .await
             .context(format!("Failed to bind to socket {addr}"))?;
 
+        let rh = RequestHandler::new(services);
         loop {
             let (stream, remote_addr) = listener
                 .accept()
@@ -55,8 +56,8 @@ impl Server {
             debug!("Accepted connection from {}", remote_addr);
             let io = TokioIo::new(stream);
 
+            let rh = rh.clone();
             tokio::task::spawn(async move {
-                let rh = RequestHandler::new();
                 if let Err(err) = http1::Builder::new().serve_connection(io, rh).await {
                     error!("Error serving connection: {:?}", err);
                 }

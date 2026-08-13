@@ -1,7 +1,8 @@
 use anyhow::{Context, Result};
+use serde::Deserialize;
 use std::{fs, path::Path};
 
-use serde::Deserialize;
+use crate::service::Service;
 
 fn bind_default() -> String {
     "0.0.0.0".to_string()
@@ -17,6 +18,7 @@ pub struct Config {
     pub bind: String,
     #[serde(default = "port_default")]
     pub port: u16,
+    pub services: Vec<Service>,
 }
 
 impl Config {
