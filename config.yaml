@@ -5,4 +5,4 @@ services:
     type: file
     route: /coso
     enabled: true
-    path: a.yamls
+    path: config.yaml

@@ -13,3 +13,10 @@ pub fn not_found_response() -> Result<Response<Full<Bytes>>, hyper::Error> {
         .body(Full::new(Bytes::from("404 Not Found")))
         .unwrap())
 }
+
+pub fn internal_error(err: String) -> Result<Response<Full<Bytes>>, hyper::Error> {
+    Ok(Response::builder()
+        .status(StatusCode::INTERNAL_SERVER_ERROR)
+        .body(Full::new(Bytes::from(err)))
+        .unwrap())
+}

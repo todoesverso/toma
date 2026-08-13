@@ -1,8 +1,8 @@
 use anyhow::Result;
-use hyper::header::{self, CACHE_CONTROL, CONTENT_LENGTH, CONTENT_TYPE};
+use hyper::header::{CACHE_CONTROL, CONTENT_LENGTH, CONTENT_TYPE};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::{Arc, LazyLock};
+use std::sync::LazyLock;
 use std::time::Duration;
 
 use http_body_util::Full;
@@ -11,7 +11,7 @@ use hyper::{Request, Response, StatusCode};
 use moka::future::Cache;
 use tokio::fs::File;
 
-use crate::handlers::full;
+use crate::handlers::{full, internal_error};
 
 static MIME_CACHE: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
     [
@@ -107,7 +107,8 @@ pub async fn serve_file(path: &str) -> Response<Full<Bytes>> {
             .body(Full::new(cached_data.clone()))
             .unwrap(),
 
-        _ => full("file too large").unwrap(),
+        Ok(None) => full("file too large").unwrap(),
+        Err(e) => internal_error(e.to_string()).unwrap(),
     }
 }
 

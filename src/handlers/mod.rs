@@ -15,7 +15,7 @@ mod file;
 mod utils;
 
 use crate::handlers::file::FileHandler;
-use crate::handlers::utils::{full, not_found_response};
+use crate::handlers::utils::{full, internal_error, not_found_response};
 use crate::service::{Service, ServiceType};
 
 #[derive(Debug, Clone)]
