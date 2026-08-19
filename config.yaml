@@ -5,4 +5,4 @@ services:
     type: file
     route: /coso
     enabled: true
-    path: config.yaml
+    path: a.mp4 

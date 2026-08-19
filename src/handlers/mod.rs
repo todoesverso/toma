@@ -1,5 +1,5 @@
 use anyhow::Result;
-use http_body_util::Full;
+use http_body_util::combinators::BoxBody;
 use hyper::body::Bytes;
 use hyper::{Request, Response};
 
@@ -15,7 +15,7 @@ mod file;
 mod utils;
 
 use crate::handlers::file::FileHandler;
-use crate::handlers::utils::{full, internal_error, not_found_response};
+use crate::handlers::utils::{internal_error, not_found_response};
 use crate::service::{Service, ServiceType};
 
 #[derive(Debug, Clone)]
@@ -31,10 +31,7 @@ impl DynamicHandler {
         }
     }
 
-    pub async fn handle(
-        &self,
-        req: Request<IncomingBody>,
-    ) -> Result<Response<Full<Bytes>>, hyper::Error> {
+    pub async fn handle(&self, req: Request<IncomingBody>) -> Result<TomaTTPResponse> {
         match self {
             DynamicHandler::File(handler) => handler.handle(req).await,
         }
@@ -59,10 +56,7 @@ impl RequestHandler {
         }
     }
 
-    async fn handle(
-        &self,
-        req: Request<IncomingBody>,
-    ) -> Result<Response<Full<Bytes>>, hyper::Error> {
+    async fn handle(&self, req: Request<IncomingBody>) -> Result<TomaTTPResponse> {
         let path = req.uri().path();
         let _method = req.method().clone();
 
@@ -74,21 +68,16 @@ impl RequestHandler {
     }
 }
 
+pub type TomaTTPError = Box<dyn std::error::Error + Send + Sync + 'static>;
+pub type TomaTTPResponse = Response<BoxBody<Bytes, TomaTTPError>>;
+
 impl HyperService<Request<IncomingBody>> for RequestHandler {
-    type Response = Response<Full<Bytes>>;
-    type Error = hyper::Error;
+    type Response = TomaTTPResponse;
+    type Error = TomaTTPError;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn call(&self, req: Request<IncomingBody>) -> Self::Future {
         let this = self.clone();
-        Box::pin(async move { this.handle(req).await })
+        Box::pin(async move { this.handle(req).await.map_err(|e| e.into()) })
     }
-}
-
-fn hello() -> Result<Response<Full<Bytes>>, hyper::Error> {
-    full("Hello, World!")
-}
-
-fn bye() -> Result<Response<Full<Bytes>>, hyper::Error> {
-    Ok(Response::new(Full::new(Bytes::from("Bye, World!"))))
 }

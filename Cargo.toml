@@ -18,6 +18,7 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0.104"
 clap = { version = "4.6.6", features = ["derive"] }
+futures-util = "0.3.34"
 http-body-util = "0.1.4"
 hyper = { version = "1.11.0", features = ["full"] }
 hyper-util = { version = "0.1.20", features = ["full"] }
@@ -25,5 +26,6 @@ moka = { version = "0.12.16", features = ["future"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde-saphyr = "1.0.1"
 tokio = { version = "1.53.1", features = ["full"] }
+tokio-util = { version = "0.7.19", features = ["io"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
